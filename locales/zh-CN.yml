@@ -1,0 +1,79 @@
+button:
+  about: 关于
+  back: 返回
+  go: 确定
+  home: 首页
+  toggle_dark: 切换深色模式
+  toggle_langs: 切换语言
+intro:
+  desc: 固执己见的 Vite 项目模板
+  dynamic-route: 动态路由演示
+  hi: 你好，{name}
+  aka: 也叫
+  whats-your-name: 输入你的名字
+not-found: 未找到页面
+auth:
+  login: 登录
+  logout: 退出登录
+  register: 注册
+  username: 用户名
+  password: 密码
+  email: 邮箱
+  confirm_password: 确认密码
+  login_desc: 欢迎回来！登录你的账户。
+  register_desc: 创建账户，开始写博客。
+  no_account: 还没有账户？
+  have_account: 已有账户？
+  logging_in: 登录中...
+  registering: 创建账户中...
+home:
+  title: 欢迎来到 MyBlog
+  subtitle: 发现来自社区的故事、想法和见解。
+blog:
+  write: 写文章
+  edit: 编辑
+  delete: 删除
+  save: 保存修改
+  cancel: 取消
+  publish: 发布
+  publishing: 发布中...
+  saving: 保存中...
+  deleting: 删除中...
+  category: 分类
+  tags: 标签
+  content: 内容（Markdown）
+  title_placeholder: 文章标题...
+  summary_placeholder: 简短摘要（可选）
+  content_placeholder: 开始写你的故事...
+  tags_placeholder: 逗号分隔，例如 vue,js,web
+  no_posts: 暂无文章
+  no_posts_desc: 成为第一个分享故事的人！
+  write_first: 写第一篇文章
+  delete_confirm_title: 确认删除？
+  delete_confirm_desc: 此操作不可撤销。确定要删除这篇文章吗？
+  updated: 已更新
+  author: 作者
+  views: 次阅读
+  new_category: 新建
+  catalog: 目录
+search:
+  placeholder: 搜索文章...
+  button: 搜索
+category:
+  all: 全部
+about:
+  title: 关于我
+  subtitle: 全栈开发者，开源爱好者，终身学习者。
+  bio: 简介
+  skills: 技能
+  contact: 联系方式
+projects:
+  title: 我的项目
+  subtitle: 我构建和参与过的一些项目。
+knowledge:
+  title: 知识库
+  chat: AI 对话
+  sessions: 会话管理
+  daily: 每日总结
+  online: 在线
+  chat_placeholder: 输入消息...

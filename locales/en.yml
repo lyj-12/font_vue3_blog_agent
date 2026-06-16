@@ -1,0 +1,79 @@
+button:
+  about: About
+  back: Back
+  go: GO
+  home: Home
+  toggle_dark: Toggle dark mode
+  toggle_langs: Change languages
+intro:
+  desc: Opinionated Vite Starter Template
+  dynamic-route: Demo of dynamic route
+  hi: Hi, {name}!
+  aka: Also known as
+  whats-your-name: What's your name?
+not-found: Not found
+auth:
+  login: Sign In
+  logout: Logout
+  register: Sign Up
+  username: Username
+  password: Password
+  email: Email
+  confirm_password: Confirm Password
+  login_desc: Welcome back! Sign in to your account.
+  register_desc: Create an account to start blogging.
+  no_account: Don't have an account?
+  have_account: Already have an account?
+  logging_in: Signing in...
+  registering: Creating account...
+home:
+  title: Welcome to MyBlog
+  subtitle: Discover stories, ideas, and insights from our community.
+blog:
+  write: Write a Post
+  edit: Edit
+  delete: Delete
+  save: Save Changes
+  cancel: Cancel
+  publish: Publish
+  publishing: Publishing...
+  saving: Saving...
+  deleting: Deleting...
+  category: Category
+  tags: Tags
+  content: Content (Markdown)
+  title_placeholder: Post title...
+  summary_placeholder: Brief summary (optional)
+  content_placeholder: Start writing your story...
+  tags_placeholder: Comma-separated, e.g. vue,js,web
+  no_posts: No posts found
+  no_posts_desc: Be the first to share your story!
+  write_first: Write the first post
+  delete_confirm_title: Delete Post?
+  delete_confirm_desc: This action cannot be undone. Are you sure you want to delete this post?
+  updated: updated
+  author: Author
+  views: views
+  new_category: New
+  catalog: Contents
+search:
+  placeholder: Search posts...
+  button: Search
+category:
+  all: All
+about:
+  title: About Me
+  subtitle: Full-stack developer, open source enthusiast, lifelong learner.
+  bio: Bio
+  skills: Skills
+  contact: Contact
+projects:
+  title: My Projects
+  subtitle: A selection of things I've built and contributed to.
+knowledge:
+  title: Knowledge Base
+  chat: AI Chat
+  sessions: Sessions
+  daily: Daily Summary
+  online: Online
+  chat_placeholder: Type a message...
