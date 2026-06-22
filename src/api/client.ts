@@ -1,5 +1,5 @@
 // ============================================================
-// HTTP Client — wraps fetch with base URL, auth headers, etc.
+// HTTP Client — wraps fetch with base URL, auth headers, auto-refresh
 // ============================================================
 
 const BASE_URL = 'http://localhost:8008/api'
@@ -7,8 +7,7 @@ const BASE_URL = 'http://localhost:8008/api'
 function getTokens(): { accessToken: string | null, refreshToken: string | null } {
   try {
     const raw = localStorage.getItem('blog_tokens')
-    if (!raw)
-      return { accessToken: null, refreshToken: null }
+    if (!raw) return { accessToken: null, refreshToken: null }
     return JSON.parse(raw)
   }
   catch {
@@ -24,9 +23,34 @@ export function clearTokens() {
   localStorage.removeItem('blog_tokens')
 }
 
+// Token refresh — prevent concurrent refresh calls
+let refreshPromise: Promise<boolean> | null = null
+
+async function tryRefresh(): Promise<boolean> {
+  const { refreshToken } = getTokens()
+  if (!refreshToken) return false
+
+  try {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    })
+    if (!res.ok) return false
+
+    const data = await res.json()
+    saveTokens(data.access_token, data.refresh_token)
+    return true
+  }
+  catch {
+    return false
+  }
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
+  isRetry = false,
 ): Promise<T> {
   const url = `${BASE_URL}${path}`
   const { accessToken } = getTokens()
@@ -37,29 +61,35 @@ async function request<T>(
   }
 
   if (accessToken) {
-    headers.Authorization = `Bearer ${accessToken}`
+    headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  })
+  const res = await fetch(url, { ...options, headers })
+
+  // Auto-refresh on 401 (only for authenticated requests, not login/register/refresh itself)
+  if (res.status === 401 && accessToken && !isRetry && path !== '/auth/refresh') {
+    // Deduplicate concurrent refresh attempts
+    if (!refreshPromise) {
+      refreshPromise = tryRefresh().finally(() => { refreshPromise = null })
+    }
+    const ok = await refreshPromise
+    if (ok) {
+      // Retry the original request with new token
+      return request<T>(path, options, true)
+    }
+    // Refresh failed — clear and mark expired
+    clearTokens()
+    localStorage.removeItem('blog_user')
+    localStorage.setItem('blog_auth_expired', '1')
+  }
 
   if (!res.ok) {
-    // On 401, clear tokens so user can re-login
-    if (res.status === 401) {
-      clearTokens()
-      localStorage.removeItem('blog_user')
-      localStorage.setItem('blog_auth_expired', '1')
-    }
     let detail = `Request failed (${res.status})`
     try {
       const body = await res.json()
       detail = body.detail || body.message || detail
     }
-    catch {
-      // ignore parse error
-    }
+    catch { /* ignore */ }
     throw new Error(detail)
   }
 
@@ -87,17 +117,12 @@ export const http = {
   },
 }
 
-// Simple JWT payload decoder (no verification — server handles that)
 export function decodeJwtPayload(token: string): Record<string, any> | null {
   try {
     const parts = token.split('.')
-    if (parts.length !== 3)
-      return null
-    const payload = parts[1]
-    // Handle base64url
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
-    const json = atob(base64)
-    return JSON.parse(json)
+    if (parts.length !== 3) return null
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    return JSON.parse(atob(base64))
   }
   catch {
     return null

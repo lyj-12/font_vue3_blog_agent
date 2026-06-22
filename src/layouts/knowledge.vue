@@ -27,7 +27,7 @@ function isActive(path: string): boolean {
         <div px-4 py-3 border-b="~ gray-200 dark:gray-700">
           <RouterLink to="/" flex items-center gap-2 text-lg font-bold no-underline>
             <div i-carbon-blog text-xl text-teal-600 />
-            <span text="gray-800 dark:gray-100">MyBlog</span>
+            <span text="gray-800 dark:gray-100">{{ t('blog.project_name') || 'MyBlog' }}</span>
           </RouterLink>
         </div>
 
@@ -74,7 +74,7 @@ function isActive(path: string): boolean {
         >
           <RouterLink to="/" flex items-center gap-1.5 text-sm font-bold no-underline>
             <div i-carbon-blog text-lg text-teal-600 />
-            <span text="gray-800 dark:gray-100">MyBlog</span>
+            <span text="gray-800 dark:gray-100">{{ t('blog.project_name') || 'MyBlog' }}</span>
           </RouterLink>
           <span text="xs gray-500 dark:gray-400" font-medium>
             {{ t('knowledge.title') || 'Knowledge Base' }}

@@ -27,9 +27,10 @@ auth:
   logging_in: 登录中...
   registering: 创建账户中...
 home:
-  title: 欢迎来到 MyBlog
+  title: 欢迎来到 {projectName}
   subtitle: 发现来自社区的故事、想法和见解。
 blog:
+  project_name: 墨启
   write: 写文章
   edit: 编辑
   delete: 删除
@@ -51,11 +52,14 @@ blog:
   write_first: 写第一篇文章
   delete_confirm_title: 确认删除？
   delete_confirm_desc: 此操作不可撤销。确定要删除这篇文章吗？
-  updated: 已更新
   author: 作者
   views: 次阅读
   new_category: 新建
   catalog: 目录
+  sort: 排序
+  title: 标题
+  created: 创建时间
+  updated: 更新时间
 search:
   placeholder: 搜索文章...
   button: 搜索

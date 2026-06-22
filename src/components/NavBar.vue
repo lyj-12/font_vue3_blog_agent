@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { availableLocales, loadLanguageAsync } from '~/modules/i18n'
 
 const router = useRouter()
@@ -85,16 +85,13 @@ onClickOutside(userMenuRef, () => {
       <!-- Logo -->
       <RouterLink to="/" flex items-center gap-2 text-lg font-bold no-underline hover:opacity-80>
         <div i-carbon-blog text-2xl text-teal-600 />
-        <span text="gray-800 dark:gray-100">MyBlog</span>
+        <span text="gray-800 dark:gray-100">{{ t('blog.project_name') || 'MyBlog' }}</span>
       </RouterLink>
 
       <!-- Desktop nav -->
       <nav hidden items-center gap-4 md:flex>
         <RouterLink to="/about" class="text-sm text-gray-600 no-underline transition-colors dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400">
           {{ t('about.title') || 'About' }}
-        </RouterLink>
-        <RouterLink to="/projects" class="text-sm text-gray-600 no-underline transition-colors dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400">
-          {{ t('projects.title') || 'Projects' }}
         </RouterLink>
         <RouterLink to="/knowledge/chat" class="text-sm text-gray-600 no-underline transition-colors dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400">
           {{ t('knowledge.title') || 'Knowledge' }}
@@ -232,14 +229,6 @@ onClickOutside(userMenuRef, () => {
           <span>{{ t('about.title') || 'About' }}</span>
         </RouterLink>
         <RouterLink
-          to="/projects"
-          class="flex items-center gap-2 rounded-lg p-2 text-gray-700 no-underline hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-          @click="mobileMenuOpen = false"
-        >
-          <div i-carbon-application text-teal-600 />
-          <span>{{ t('projects.title') || 'Projects' }}</span>
-        </RouterLink>
-        <RouterLink
           to="/knowledge/chat"
           class="flex items-center gap-2 rounded-lg p-2 text-gray-700 no-underline hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
           @click="mobileMenuOpen = false"
@@ -298,3 +287,5 @@ onClickOutside(userMenuRef, () => {
     </div>
   </header>
 </template>
+
+

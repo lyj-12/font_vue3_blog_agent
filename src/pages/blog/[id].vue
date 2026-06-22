@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { MdPreview } from 'md-editor-v3'
 
 defineOptions({ name: 'BlogDetailPage' })
@@ -13,6 +13,7 @@ const postId = computed(() => Number(route.params.id))
 
 const deleting = ref(false)
 const showDeleteConfirm = ref(false)
+const showBackToTop = ref(false)
 
 async function loadPost() {
   try {
@@ -89,6 +90,10 @@ function initToc() {
   tocItems.value = items
 }
 
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 function scrollToToc(item: TocItem) {
   const el = document.getElementById(item.id)
   if (el) {
@@ -109,6 +114,7 @@ function onScroll() {
           active = item.id
       }
       activeTocId.value = active
+      showBackToTop.value = window.scrollY > 400
       scrollTicking = false
     })
     scrollTicking = true
@@ -157,7 +163,7 @@ async function handleDelete() {
           <div min-w-0 flex-1>
             <button
               mb-6 flex items-center gap-1 text-sm text="gray-500 hover:gray-700 dark:gray-400 dark:hover:gray-200"
-              @click="router.back()"
+              @click="router.push('/')"
             >
               <div i-carbon-arrow-left />
               <span>{{ t('button.back') || 'Back' }}</span>
@@ -179,7 +185,7 @@ async function handleDelete() {
               {{ blog.currentPost.title }}
             </h1>
 
-            <div mb-8 flex items-center gap-3 pb-8 border-b="~ gray-200 dark:gray-700">
+            <div flex items-center gap-3 pb-6 border-b="~ gray-200 dark:gray-700">
               <div bg="teal-100 dark:teal-900/50" text="teal-600 dark:teal-400" h-10 w-10 flex items-center justify-center rounded-full font-bold>
                 <div i-carbon-user />
               </div>
@@ -238,6 +244,22 @@ async function handleDelete() {
       </template>
     </div>
 
+    <!-- Back to top -->
+    <Teleport to="body">
+      <button
+        v-show="showBackToTop"
+
+        bg="teal-600 hover:teal-500"
+        text="white"
+        shadow="lg hover:xl"
+        fixed bottom-8 right-8 z-50 h-11 w-11 flex items-center justify-center rounded-full transition-all duration-200
+        aria-label="回到顶部"
+        @click="scrollToTop"
+      >
+        <div i-carbon-arrow-up text-lg />
+      </button>
+    </Teleport>
+
     <!-- Delete confirmation modal -->
     <Teleport to="body">
       <div
@@ -281,5 +303,16 @@ async function handleDelete() {
 .blog-preview {
   --md-bg: transparent;
   background: transparent !important;
+}
+.blog-preview :deep(ol) {
+  list-style: decimal;
+  padding-left: 2em;
+}
+.blog-preview :deep(ul) {
+  list-style: disc;
+  padding-left: 2em;
+}
+.blog-preview :deep(li) {
+  margin-bottom: 0.25em;
 }
 </style>

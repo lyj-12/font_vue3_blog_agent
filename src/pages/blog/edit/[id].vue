@@ -77,7 +77,7 @@ async function handleSave() {
 </script>
 
 <template>
-  <div mx-auto max-w-4xl py-6>
+  <div mx-auto max-w-6xl py-6>
     <div v-if="!loaded" flex justify-center py-20>
       <div i-carbon-circle-dash animate-spin text-3xl text-teal-600 />
     </div>

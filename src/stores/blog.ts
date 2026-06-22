@@ -12,6 +12,8 @@ export const useBlogStore = defineStore('blog', () => {
   // Search/filter state (client-side since backend doesn't support search yet)
   const searchQuery = ref('')
   const selectedCategoryId = ref<number | null>(null)
+  const sortField = ref<"title" | "createdAt" | "updatedAt">("createdAt")
+  const sortOrder = ref<"asc" | "desc">("desc")
 
   // Computed: posts filtered by search + category
   const filteredPosts = computed(() => {
@@ -23,7 +25,17 @@ export const useBlogStore = defineStore('blog', () => {
       const q = searchQuery.value.toLowerCase()
       result = result.filter(p => p.title.toLowerCase().includes(q))
     }
-    return result
+    // Sort
+    return [...result].sort((a, b) => {
+      let cmp: number
+      if (sortField.value === "title")
+        cmp = a.title.localeCompare(b.title)
+      else if (sortField.value === "createdAt")
+        cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      else
+        cmp = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+      return sortOrder.value === "asc" ? cmp : -cmp
+    })
   })
 
   // ---- Blog actions ----
@@ -146,6 +158,8 @@ export const useBlogStore = defineStore('blog', () => {
     error,
     searchQuery,
     selectedCategoryId,
+    sortField,
+    sortOrder,
     filteredPosts,
     fetchPosts,
     fetchPost,

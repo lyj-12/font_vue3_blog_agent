@@ -115,9 +115,16 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/projects': RouteRecordInfo<
-      '/projects',
-      '/projects',
+    '/project-blog': RouteRecordInfo<
+      '/project-blog',
+      '/project-blog',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/project-sweet-memory': RouteRecordInfo<
+      '/project-sweet-memory',
+      '/project-sweet-memory',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -238,9 +245,17 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/projects.vue': {
+    'src/pages/project-blog.vue': {
       routes:
-        | '/projects'
+        | '/project-blog'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/project-sweet-memory.vue': {
+      routes:
+        | '/project-sweet-memory'
       views:
         | never
       pathParamNames:

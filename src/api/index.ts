@@ -30,6 +30,7 @@ export interface Category {
 export interface BlogListItem {
   id: number
   title: string
+  summary: string
   views: number
   createdAt: string
   updatedAt: string
@@ -127,6 +128,7 @@ export const blogApi = {
     return http.get<Array<{
       id: number
       title: string
+      summary: string
       views: number
       created_at: string
       updated_at: string
@@ -135,6 +137,7 @@ export const blogApi = {
     }>>('/blogs').then(posts => posts.map(p => ({
       id: p.id,
       title: p.title,
+      summary: p.summary || '',
       views: p.views,
       createdAt: p.created_at,
       updatedAt: p.updated_at,
