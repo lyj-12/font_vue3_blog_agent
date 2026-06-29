@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { MdEditor } from 'md-editor-v3'
 
 defineOptions({ name: 'BlogEditPage' })
@@ -11,10 +11,6 @@ const { t } = useI18n()
 
 const postId = computed(() => Number(route.params.id))
 
-if (!auth.isLoggedIn) {
-  router.replace('/auth/login')
-}
-
 const form = reactive({
   title: '',
   content: '',
@@ -26,6 +22,13 @@ const errorMsg = ref('')
 const loaded = ref(false)
 
 onMounted(async () => {
+  await auth.initSession()
+
+  if (!auth.isLoggedIn) {
+    router.replace('/auth/login')
+    return
+  }
+
   await blog.fetchCategories()
   try {
     await blog.fetchPost(postId.value)
@@ -38,7 +41,7 @@ onMounted(async () => {
     loaded.value = true
   }
   catch {
-    router.replace('/')
+    router.replace('/auth/login')
   }
 })
 

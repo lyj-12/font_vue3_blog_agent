@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 defineOptions({ name: 'LoginPage' })
 
 const router = useRouter()
@@ -14,6 +14,13 @@ const form = reactive({
 
 const submitting = ref(false)
 const errorMsg = ref('')
+
+onMounted(async () => {
+  await auth.initSession()
+  if (auth.isLoggedIn) {
+    router.replace('/')
+  }
+})
 
 async function handleLogin() {
   if (!form.username || !form.password) {
@@ -32,11 +39,6 @@ async function handleLogin() {
   finally {
     submitting.value = false
   }
-}
-
-// Redirect if already logged in
-if (auth.isLoggedIn) {
-  router.replace('/')
 }
 </script>
 

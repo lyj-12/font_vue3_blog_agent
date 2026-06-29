@@ -25,7 +25,8 @@
     "pinia": "catalog:frontend",
     "vue": "catalog:frontend",
     "vue-i18n": "catalog:frontend",
-    "vue-router": "catalog:frontend"
+    "vue-router": "catalog:frontend",
+    "workbox-window": "^7.4.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:dev",

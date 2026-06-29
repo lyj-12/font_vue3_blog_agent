@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { MdEditor } from 'md-editor-v3'
 
 defineOptions({ name: 'BlogWritePage' })
@@ -10,9 +10,6 @@ const { t } = useI18n()
 
 useHead({ title: () => t('blog.write') || 'Write a Post' })
 
-if (!auth.isLoggedIn) {
-  router.replace('/auth/login')
-}
 const form = reactive({
   title: '',
   content: '',
@@ -25,6 +22,13 @@ const showNewCategory = ref(false)
 const newCategoryName = ref('')
 
 onMounted(async () => {
+  await auth.initSession()
+
+  if (!auth.isLoggedIn) {
+    router.replace('/auth/login')
+    return
+  }
+
   await blog.fetchCategories()
 })
 

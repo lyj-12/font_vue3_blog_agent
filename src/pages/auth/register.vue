@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 defineOptions({ name: 'RegisterPage' })
 
 const router = useRouter()
@@ -16,6 +16,13 @@ const form = reactive({
 
 const submitting = ref(false)
 const errorMsg = ref('')
+
+onMounted(async () => {
+  await auth.initSession()
+  if (auth.isLoggedIn) {
+    router.replace('/')
+  }
+})
 
 async function handleRegister() {
   if (!form.username || !form.email || !form.password || !form.confirmPassword) {
@@ -42,10 +49,6 @@ async function handleRegister() {
   finally {
     submitting.value = false
   }
-}
-
-if (auth.isLoggedIn) {
-  router.replace('/')
 }
 </script>
 
