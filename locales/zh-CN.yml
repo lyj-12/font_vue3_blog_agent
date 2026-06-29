@@ -28,7 +28,7 @@ auth:
   registering: 创建账户中...
 home:
   title: 欢迎来到 {projectName}
-  subtitle: 发现来自社区的故事、想法和见解。
+  subtitle: 用 AI 写作、学习和探索——你的个人知识空间。
 blog:
   project_name: 墨启
   write: 写文章
@@ -85,6 +85,5 @@ knowledge:
   daily: 每日总结
   online: 在线
   chat_placeholder: 输入消息...
-
 dict:
-  title: 单词词典
+  title: 词典

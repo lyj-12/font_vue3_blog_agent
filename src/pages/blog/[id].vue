@@ -160,7 +160,7 @@ function handleExportPdf() {
 
 <template>
   <div>
-    <div mx-auto max-w-6xl py-6>
+    <div mx-auto max-w-6xl py-3>
       <!-- Loading -->
       <div v-if="blog.loading && !blog.currentPost" flex justify-center py-20>
         <div i-carbon-circle-dash animate-spin text-3xl text-teal-600 />

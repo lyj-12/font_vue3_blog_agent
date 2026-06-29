@@ -28,7 +28,7 @@ auth:
   registering: Creating account...
 home:
   title: Welcome to {projectName}
-  subtitle: Discover stories, ideas, and insights from our community.
+  subtitle: Write, learn, and explore with AI — your personal knowledge space.
 blog:
   project_name: MoQi
   write: Write a Post
@@ -89,3 +89,4 @@ knowledge:
 
 dict:
   title: Dictionary
+

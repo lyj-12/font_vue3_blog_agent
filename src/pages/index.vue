@@ -39,7 +39,7 @@ function formatDate(iso: string): string {
 <template>
   <div mx-auto max-w-6xl>
     <!-- Hero / Welcome -->
-    <div py-8 md:py-8>
+    <div py-5 md:py-5>
       <h1 text="3xl md:4xl gray-800 dark:gray-100" mb-3 font-bold>
         {{ t('home.title', { projectName: t('blog.project_name') || 'MyBlog' }) }}
       </h1>

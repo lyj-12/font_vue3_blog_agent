@@ -14,9 +14,9 @@ function isActive(path: string): boolean {
 </script>
 
 <template>
-  <div h="[84vh]" flex flex-col bg="gray-50 dark:gray-900">
+  <div h="[84vh]" flex flex-col bg="gray-50 dark:gray-900" >
     <!-- Body: sidebar + content -->
-    <div mx-auto max-w-6xl w-full flex flex-1 overflow-hidden>
+    <div mx-auto max-w-6xl w-full flex flex-1 overflow-hidden rounded-2xl>
       <!-- Sidebar -->
       <aside border-r="~ gray-200 dark:gray-700" bg="white dark:gray-800" hidden w-72 flex-shrink-0 flex-col md:flex>
         <!-- Logo / brand -->

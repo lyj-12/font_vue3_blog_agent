@@ -177,7 +177,7 @@ async function handleDeleteCategory(id: number) {
 </script>
 
 <template>
-  <div mx-auto max-w-6xl py-6>
+  <div mx-auto max-w-6xl py-3>
     <div v-if="errorMsg" mb-4 rounded-lg p-3 text-sm bg="red-50 dark:red-900/30" text="red-600 dark:red-400" border="~ red-200 dark:red-800">
       {{ errorMsg }}
     </div>
