@@ -77,7 +77,7 @@ async function handlePublish() {
 </script>
 
 <template>
-  <div mx-auto max-w-6xl py-6>
+  <div mx-auto max-w-6xl py-3>
     <div v-if="errorMsg" mb-4 rounded-lg p-3 text-sm bg="red-50 dark:red-900/30" text="red-600 dark:red-400" border="~ red-200 dark:red-800">
       {{ errorMsg }}
     </div>
@@ -126,8 +126,7 @@ async function handlePublish() {
     </div>
 
     <div>
-      <label text="sm gray-600 dark:gray-400" mb-2 block>{{ t('blog.content') || 'Content (Markdown):' }}</label>
-      <MdEditor v-model="form.content" :theme="isDark ? 'dark' : 'light'" :placeholder="t('blog.content_placeholder') || 'Start writing...'" language="en-US" />
+      <MdEditor v-model="form.content" min-h-screen-sm :theme="isDark ? 'dark' : 'light'" :placeholder="t('blog.content_placeholder') || 'Start writing...'" language="en-US" />
     </div>
   </div>
 </template>

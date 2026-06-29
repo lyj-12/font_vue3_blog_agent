@@ -77,7 +77,7 @@ async function handleSave() {
 </script>
 
 <template>
-  <div mx-auto max-w-6xl py-6>
+  <div mx-auto max-w-6xl py-3>
     <div v-if="!loaded" flex justify-center py-20>
       <div i-carbon-circle-dash animate-spin text-3xl text-teal-600 />
     </div>
@@ -115,8 +115,7 @@ async function handleSave() {
       </div>
 
       <div>
-        <label text="sm gray-600 dark:gray-400" mb-2 block>{{ t('blog.content') || 'Content (Markdown):' }}</label>
-        <MdEditor v-model="form.content" :theme="isDark ? 'dark' : 'light'" language="en-US" />
+        <MdEditor v-model="form.content" min-h-screen-sm :theme="isDark ? 'dark' : 'light'" language="en-US" />
       </div>
     </template>
   </div>

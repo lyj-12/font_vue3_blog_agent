@@ -44,7 +44,7 @@ function formatDate(iso: string): string {
         {{ t('home.title', { projectName: t('blog.project_name') || 'MyBlog' }) }}
       </h1>
       <p text="gray-500 dark:gray-400" max-w-2xl>
-        {{ t('home.subtitle') || 'Discover stories, ideas, and insights from our community.' }}
+        {{ t('home.subtitle') || 'Collecting knowledge, sparking ideas, sharing insights.' }}
       </p>
     </div>
 

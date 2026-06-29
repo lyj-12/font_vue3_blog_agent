@@ -97,7 +97,7 @@ onClickOutside(userMenuRef, () => {
           {{ t('knowledge.title') || 'Knowledge' }}
         </RouterLink>
         <RouterLink to="/dict" class="text-sm text-gray-600 no-underline transition-colors dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400">
-          词典
+          {{ t('dict.title') }}
         </RouterLink>
         <!-- Search bar (desktop) -->
         <div relative flex items-center>
@@ -246,7 +246,7 @@ onClickOutside(userMenuRef, () => {
           @click="mobileMenuOpen = false"
         >
           <div i-carbon-book text-teal-600 />
-          <span>词典</span>
+          <span>{{ t('dict.title') }}</span>
         </RouterLink>
 
         <button
