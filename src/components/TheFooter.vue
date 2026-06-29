@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 const { t } = useI18n()
 </script>
 
@@ -8,7 +8,7 @@ const { t } = useI18n()
       <div flex flex-col items-center justify-between gap-4 md:flex-row>
         <!-- Logo & copyright -->
         <div flex items-center gap-2 text="sm gray-500 dark:gray-400">
-          <img src="/MoQi.png" alt="MoQi" class="h-5 w-5">
+          <img src="/MoQi.png" alt="MyBlog" class="h-6 w-auto" />
           <span>© 2026 YingJie Liu</span>
         </div>
 

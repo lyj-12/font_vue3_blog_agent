@@ -28,7 +28,7 @@ auth:
   registering: Creating account...
 home:
   title: Welcome to {projectName}
-  subtitle: Collecting knowledge, sparking ideas, sharing insights.
+  subtitle: Discover stories, ideas, and insights from our community.
 blog:
   project_name: MoQi
   write: Write a Post
@@ -56,6 +56,10 @@ blog:
   views: views
   new_category: New
   catalog: Contents
+  import_markdown: Import .md
+  export_pdf: Export PDF
+  manage: Manage
+  done: Done
   sort: Sort
   title: Title
   created: Created
@@ -82,5 +86,6 @@ knowledge:
   daily: Daily Summary
   online: Online
   chat_placeholder: Type a message...
+
 dict:
-  title: Dict
+  title: Dictionary

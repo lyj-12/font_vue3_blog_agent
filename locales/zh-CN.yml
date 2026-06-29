@@ -28,7 +28,7 @@ auth:
   registering: 创建账户中...
 home:
   title: 欢迎来到 {projectName}
-  subtitle: 沉淀知识，激发灵感，分享见解。
+  subtitle: 发现来自社区的故事、想法和见解。
 blog:
   project_name: 墨启
   write: 写文章
@@ -56,6 +56,10 @@ blog:
   views: 次阅读
   new_category: 新建
   catalog: 目录
+  import_markdown: 导入 Markdown
+  export_pdf: 导出 PDF
+  manage: 管理
+  done: 完成
   sort: 排序
   title: 标题
   created: 创建时间
@@ -81,5 +85,6 @@ knowledge:
   daily: 每日总结
   online: 在线
   chat_placeholder: 输入消息...
+
 dict:
-  title: 词典
+  title: 单词词典

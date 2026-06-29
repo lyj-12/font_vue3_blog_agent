@@ -12,10 +12,10 @@ const emit = defineEmits<{
 
 <template>
   <button
-
+    inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium
     transition="all duration-200"
     border="~ transparent"
-    inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium
+    cursor-pointer
     :class="active
       ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"

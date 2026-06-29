@@ -25,7 +25,7 @@ useHead({ title: () => project.name })
 </script>
 
 <template>
-  <div mx-auto max-w-4xl py-3>
+  <div mx-auto max-w-3xl py-10>
     <button
       mb-8 flex items-center gap-1 text-sm text="gray-500 hover:gray-700 dark:gray-400 dark:hover:gray-200"
       @click="router.push('/about')"

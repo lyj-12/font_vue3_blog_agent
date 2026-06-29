@@ -1,8 +1,8 @@
-// ============================================================
+﻿// ============================================================
 // API Layer — real HTTP for auth + blog + categories
 // ============================================================
 
-import { clearTokens, decodeJwtPayload, http, saveTokens } from './client'
+import { http, decodeJwtPayload, saveTokens, clearTokens, BASE_URL } from './client'
 
 // --- Types ---
 
@@ -52,7 +52,7 @@ export interface BlogDetail {
 // --- Auth API ---
 
 export const authApi = {
-  async login(username: string, password: string): Promise<{ user: User, tokens: TokenResponse }> {
+  async login(username: string, password: string): Promise<{ user: User; tokens: TokenResponse }> {
     const res = await http.post<{
       access_token: string
       refresh_token: string
@@ -112,8 +112,7 @@ export const authApi = {
   async getSession(): Promise<User | null> {
     try {
       const raw = localStorage.getItem('blog_user')
-      if (!raw)
-        return null
+      if (!raw) return null
       return JSON.parse(raw) as User
     }
     catch {
@@ -134,7 +133,7 @@ export const blogApi = {
       created_at: string
       updated_at: string
       user_id: number
-      categories: Array<{ id: number, cate_name: string, created_at: string }>
+      categories: Array<{ id: number; cate_name: string; created_at: string }>
     }>>('/blogs').then(posts => posts.map(p => ({
       id: p.id,
       title: p.title,
@@ -156,7 +155,7 @@ export const blogApi = {
       created_at: string
       updated_at: string
       user_id: number
-      categories: Array<{ id: number, cate_name: string, created_at: string }>
+      categories: Array<{ id: number; cate_name: string; created_at: string }>
     }>(`/blogs/${id}`)
     return {
       id: p.id,
@@ -170,7 +169,7 @@ export const blogApi = {
     }
   },
 
-  async create(data: { title: string, content: string, categoryIds: number[] }): Promise<BlogDetail> {
+  async create(data: { title: string; content: string; categoryIds: number[] }): Promise<BlogDetail> {
     const p = await http.post<{
       id: number
       title: string
@@ -179,7 +178,7 @@ export const blogApi = {
       created_at: string
       updated_at: string
       user_id: number
-      categories: Array<{ id: number, cate_name: string, created_at: string }>
+      categories: Array<{ id: number; cate_name: string; created_at: string }>
     }>('/blogs', { title: data.title, content: data.content, category_ids: data.categoryIds })
     return {
       id: p.id,
@@ -193,7 +192,7 @@ export const blogApi = {
     }
   },
 
-  async update(id: number, data: { title: string, content: string, categoryIds: number[] }): Promise<BlogDetail> {
+  async update(id: number, data: { title: string; content: string; categoryIds: number[] }): Promise<BlogDetail> {
     const p = await http.put<{
       id: number
       title: string
@@ -202,7 +201,7 @@ export const blogApi = {
       created_at: string
       updated_at: string
       user_id: number
-      categories: Array<{ id: number, cate_name: string, created_at: string }>
+      categories: Array<{ id: number; cate_name: string; created_at: string }>
     }>(`/blogs/${id}`, { title: data.title, content: data.content, category_ids: data.categoryIds })
     return {
       id: p.id,
@@ -225,17 +224,17 @@ export const blogApi = {
 
 export const categoryApi = {
   async list(): Promise<Category[]> {
-    return http.get<Array<{ id: number, cate_name: string, created_at: string }>>('/blog-categories')
+    return http.get<Array<{ id: number; cate_name: string; created_at: string }>>('/blog-categories')
       .then(cats => cats.map(c => ({ id: c.id, name: c.cate_name, createdAt: c.created_at })))
   },
 
   async create(name: string): Promise<Category> {
-    const c = await http.post<{ id: number, cate_name: string, created_at: string }>('/blog-categories', { cate_name: name })
+    const c = await http.post<{ id: number; cate_name: string; created_at: string }>('/blog-categories', { cate_name: name })
     return { id: c.id, name: c.cate_name, createdAt: c.created_at }
   },
 
   async update(id: number, name: string): Promise<Category> {
-    const c = await http.put<{ id: number, cate_name: string, created_at: string }>(`/blog-categories/${id}`, { cate_name: name })
+    const c = await http.put<{ id: number; cate_name: string; created_at: string }>(`/blog-categories/${id}`, { cate_name: name })
     return { id: c.id, name: c.cate_name, createdAt: c.created_at }
   },
 
@@ -244,7 +243,152 @@ export const categoryApi = {
   },
 }
 
-// --- Word Dict API ---
+// --- Knowledge / RAG Chat API ---
+
+export interface SourceDoc {
+  content: string
+  score: number
+  metadata: Record<string, any>
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface ChatCallbacks {
+  onToken: (token: string) => void
+  onContext?: (sources: SourceDoc[]) => void
+  onError?: (error: string) => void
+  onDone?: () => void
+}
+
+// KNOWLEDGE_BASE_URL removed - use imported BASE_URL instead
+
+export const knowledgeApi = {
+  chat(
+    query: string,
+    sessionId: number,
+    history: ChatMessage[],
+    callbacks: ChatCallbacks,
+  ): AbortController {
+    const controller = new AbortController()
+
+    ;(async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/knowledge/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, session_id: sessionId }),
+          signal: controller.signal,
+        })
+
+        if (!res.ok) {
+          const err = await res.text().catch(() => 'Unknown error')
+          callbacks.onError?.(`Request failed (${res.status}): ${err}`)
+          return
+        }
+
+        const reader = res.body?.getReader()
+        if (!reader) {
+          callbacks.onError?.('Response body is not readable')
+          return
+        }
+
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            const trimmed = line.trim()
+            if (!trimmed || !trimmed.startsWith('data: ')) continue
+            const payload = trimmed.slice(6).trim()
+
+            if (payload === '[DONE]') {
+              callbacks.onDone?.()
+              return
+            }
+
+            try {
+              const data = JSON.parse(payload)
+              switch (data.type) {
+                case 'token':
+                  callbacks.onToken(data.content)
+                  break
+                case 'context':
+                  callbacks.onContext?.(data.sources)
+                  break
+                case 'error':
+                  callbacks.onError?.(data.content)
+                  break
+              }
+            }
+            catch {
+              // Skip unparseable lines
+            }
+          }
+        }
+        callbacks.onDone?.()
+      }
+      catch (err: any) {
+        if (err.name === 'AbortError') return
+        callbacks.onError?.(err.message || 'Network error')
+      }
+    })()
+
+    return controller
+  },
+}
+
+export interface SessionItem {
+  id: number
+  title: string
+  message_count: number
+  last_message: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface MessageItem {
+  id: number
+  session_id: number
+  role: string
+  content: string
+  sources: string | null
+  created_at: string
+}
+
+export const sessionApi = {
+  async list(): Promise<SessionItem[]> {
+    return http.get<SessionItem[]>('/knowledge/sessions')
+  },
+
+  async create(title: string = "新对话"): Promise<SessionItem> {
+    return http.post<SessionItem>('/knowledge/sessions', { title })
+  },
+
+  async update(id: number, title: string): Promise<SessionItem> {
+    return http.put<SessionItem>(`/knowledge/sessions/${id}`, { title })
+  },
+
+  async delete(id: number): Promise<void> {
+    return http.delete(`/knowledge/sessions/${id}`)
+  },
+
+  async messages(id: number): Promise<MessageItem[]> {
+    return http.get<MessageItem[]>(`/knowledge/sessions/${id}/messages`)
+  },
+}
+
+// --- Word Dictionary API ---
 
 export interface WordDictItem {
   id: number
@@ -263,7 +407,6 @@ export interface WordDictCreatePayload {
 }
 
 export interface WordDictUpdatePayload {
-  word?: string | null
   chapter?: string | null
   remark?: string | null
 }
@@ -278,11 +421,11 @@ export const wordDictApi = {
   },
 
   async update(id: number, data: WordDictUpdatePayload): Promise<WordDictItem> {
-    return http.put<WordDictItem>(/word-dict/, data)
+    return http.put<WordDictItem>(`/word-dict/${id}`, data)
   },
 
   async delete(id: number): Promise<void> {
-    return http.delete(/word-dict/)
+    return http.delete(`/word-dict/${id}`)
   },
 }
 

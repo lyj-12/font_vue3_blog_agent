@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { setup } from '@css-render/vue3-ssr'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import Shiki from '@shikijs/markdown-it'
 import { unheadVueComposablesImports } from '@unhead/vue'
@@ -6,6 +7,7 @@ import Vue from '@vitejs/plugin-vue'
 import LinkAttributes from 'markdown-it-link-attributes'
 import Unocss from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
 import VueMacros from 'unplugin-vue-macros/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
@@ -17,6 +19,9 @@ import generateSitemap from 'vite-ssg-sitemap'
 import { VueRouterAutoImports } from 'vue-router/unplugin'
 import VueRouter from 'vue-router/vite'
 import 'vitest/config'
+
+const HTTPS_RE = /^https?:\/\//
+const CLOSE_HEAD_RE = /<\/head>/
 
 export default defineConfig({
   resolve: {
@@ -54,6 +59,13 @@ export default defineConfig({
         VueRouterAutoImports,
         {
           // add any other imports you were relying on
+          'naive-ui': [
+            'useDialog',
+            'useMessage',
+            'useNotification',
+            'useLoadingBar',
+            'useModal',
+          ],
           'vue-router/auto': ['useLink'],
         },
       ],
@@ -72,6 +84,7 @@ export default defineConfig({
       // allow auto import and register components used in markdown
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
       dts: 'src/components.d.ts',
+      resolvers: [NaiveUiResolver()],
     }),
 
     // https://github.com/antfu/unocss
@@ -85,7 +98,7 @@ export default defineConfig({
       headEnabled: true,
       async markdownItSetup(md) {
         md.use(LinkAttributes, {
-          matcher: (link: string) => /^https?:\/\//.test(link),
+          matcher: (link: string) => HTTPS_RE.test(link),
           attrs: {
             target: '_blank',
             rel: 'noopener',
@@ -104,24 +117,24 @@ export default defineConfig({
     // https://github.com/antfu/vite-plugin-pwa
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['MoQi.png', 'safari-pinned-tab.svg'],
+      includeAssets: ['MoQi.png'],
       manifest: {
-        name: 'MyBlog',
-        short_name: 'MyBlog',
+        name: 'Vitesse',
+        short_name: 'Vitesse',
         theme_color: '#ffffff',
         icons: [
           {
-            src: '/MoQi.png',
+            src: '/pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/MoQi.png',
+            src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: '/MoQi.png',
+            src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable',
@@ -152,6 +165,16 @@ export default defineConfig({
   ssgOptions: {
     script: 'async',
     formatting: 'minify',
+    async onBeforePageRender(_, __, appCtx) {
+      const { collect } = setup(appCtx.app)
+      ;(appCtx as any).__collectStyle = collect
+    },
+    async onPageRendered(_, renderedHTML, appCtx) {
+      return renderedHTML.replace(
+        CLOSE_HEAD_RE,
+        `${(appCtx as any).__collectStyle()}</head>`,
+      )
+    },
     beastiesOptions: {
       reduceInlineStyles: false,
     },
@@ -162,6 +185,6 @@ export default defineConfig({
 
   ssr: {
     // TODO: workaround until they support native ESM
-    noExternal: ['workbox-window', /vue-i18n/],
+    noExternal: ['naive-ui', 'vueuc', 'date-fns', 'workbox-window', /vue-i18n/],
   },
 })

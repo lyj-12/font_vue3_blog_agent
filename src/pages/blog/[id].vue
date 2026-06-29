@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { MdPreview } from 'md-editor-v3'
 
 defineOptions({ name: 'BlogDetailPage' })
@@ -14,6 +14,7 @@ const postId = computed(() => Number(route.params.id))
 const deleting = ref(false)
 const showDeleteConfirm = ref(false)
 const showBackToTop = ref(false)
+const showMobileToc = ref(false)
 
 async function loadPost() {
   try {
@@ -28,6 +29,9 @@ async function loadPost() {
     router.replace('/')
   }
 }
+
+const tocItems = ref<TocItem[]>([])
+const activeTocId = ref('')
 
 onMounted(loadPost)
 watch(postId, () => {
@@ -64,9 +68,6 @@ interface TocItem {
   top: number
 }
 
-const tocItems = ref<TocItem[]>([])
-const activeTocId = ref('')
-
 function initToc() {
   const el = document.getElementById(previewId)
   if (!el)
@@ -100,6 +101,11 @@ function scrollToToc(item: TocItem) {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     activeTocId.value = item.id
   }
+}
+
+function scrollToTocAndClose(item: TocItem) {
+  scrollToToc(item)
+  showMobileToc.value = false
 }
 
 // Scroll tracking
@@ -146,11 +152,15 @@ async function handleDelete() {
     showDeleteConfirm.value = false
   }
 }
+
+function handleExportPdf() {
+  window.print()
+}
 </script>
 
 <template>
   <div>
-    <div mx-auto max-w-6xl py-3>
+    <div mx-auto max-w-6xl py-6>
       <!-- Loading -->
       <div v-if="blog.loading && !blog.currentPost" flex justify-center py-20>
         <div i-carbon-circle-dash animate-spin text-3xl text-teal-600 />
@@ -212,6 +222,13 @@ async function handleDelete() {
                 >
                   <div i-carbon-trash-can /><span class="hidden sm:inline">{{ t('blog.delete') || 'Delete' }}</span>
                 </button>
+                <button
+                  flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm
+                  bg="gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600" text="gray-600 dark:gray-300"
+                  @click="handleExportPdf"
+                >
+                  <div i-carbon-document-pdf /><span class="hidden sm:inline">{{ t("blog.export_pdf") || "Export PDF" }}</span>
+                </button>
               </div>
             </div>
 
@@ -258,6 +275,51 @@ async function handleDelete() {
       >
         <div i-carbon-arrow-up text-lg />
       </button>
+    </Teleport>
+
+    <!-- Mobile TOC button -->
+    <Teleport to="body">
+      <button
+        v-show="tocItems.length > 0"
+        bg="teal-600 hover:teal-500" text="white"
+        shadow="lg hover:xl"
+        fixed bottom-20 right-8 z-50 h-11 w-11 flex items-center justify-center rounded-full transition-all duration-200
+        lg:hidden
+        aria-label="目录"
+        @click="showMobileToc = !showMobileToc"
+      >
+        <div i-carbon-list text-lg />
+      </button>
+    </Teleport>
+
+    <!-- Mobile TOC overlay -->
+    <Teleport to="body">
+      <div
+        v-if="showMobileToc" fixed inset-0 z-40 lg:hidden
+        class="bg-black/40"
+        @click.self="showMobileToc = false"
+      >
+        <div
+          class="fixed bottom-0 left-0 right-0 max-h-[70vh] overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl dark:bg-gray-800"
+        >
+          <div class="mb-4 text-xs text-gray-500 font-semibold tracking-wider uppercase dark:text-gray-400">
+            目录
+          </div>
+          <nav class="flex flex-col gap-1">
+            <div
+              v-for="item in tocItems" :key="item.id"
+              class="cursor-pointer rounded-lg p-2 text-sm leading-relaxed transition-colors"
+              :style="{ paddingLeft: `${12 + item.indent * 16}px` }"
+              :class="activeTocId === item.id
+                ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'"
+              @click="scrollToTocAndClose(item)"
+            >
+              {{ item.title }}
+            </div>
+          </nav>
+        </div>
+      </div>
     </Teleport>
 
     <!-- Delete confirmation modal -->

@@ -1,4 +1,4 @@
-import type { Locale } from 'vue-i18n'
+﻿import type { Locale } from 'vue-i18n'
 import type { UserModule } from '~/types'
 import { createI18n } from 'vue-i18n'
 
@@ -25,6 +25,9 @@ function setI18nLanguage(lang: Locale) {
   i18n.global.locale.value = lang as any
   if (typeof document !== 'undefined')
     document.querySelector('html')?.setAttribute('lang', lang)
+  // Persist locale preference
+  if (typeof localStorage !== 'undefined')
+    localStorage.setItem('blog_locale', lang)
   return lang
 }
 
@@ -44,7 +47,8 @@ export async function loadLanguageAsync(lang: string): Promise<Locale> {
   return setI18nLanguage(lang)
 }
 
-export const install: UserModule = ({ app }) => {
+export const install: UserModule = ({ app, isClient }) => {
   app.use(i18n)
-  loadLanguageAsync('en')
+  const saved = isClient ? localStorage.getItem('blog_locale') : null
+  loadLanguageAsync(saved || 'en')
 }

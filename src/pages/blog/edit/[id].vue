@@ -8,8 +8,10 @@ const router = useRouter()
 const auth = useAuthStore()
 const blog = useBlogStore()
 const { t } = useI18n()
+const toast = ref<{ message: string, type: 'success' | 'error' } | null>(null)
 
 const postId = computed(() => Number(route.params.id))
+
 
 const form = reactive({
   title: '',
@@ -20,6 +22,10 @@ const form = reactive({
 const submitting = ref(false)
 const errorMsg = ref('')
 const loaded = ref(false)
+const managingCategories = ref(false)
+const editingCategoryId = ref<number | null>(null)
+const editingCategoryName = ref('')
+const confirmDeleteId = ref<number | null>(null)
 
 onMounted(async () => {
   await auth.initSession()
@@ -33,8 +39,14 @@ onMounted(async () => {
   try {
     await blog.fetchPost(postId.value)
     const post = blog.currentPost
-    if (!post) { router.replace('/'); return }
-    if (post.userId !== auth.user?.id) { router.replace(`/blog/${postId.value}`); return }
+    if (!post) {
+      router.replace('/')
+      return
+    }
+    if (post.userId !== auth.user?.id) {
+      router.replace(`/blog/${postId.value}`)
+      return
+    }
     form.title = post.title
     form.content = post.content
     form.categoryIds = post.categories.map(c => c.id)
@@ -50,15 +62,24 @@ useHead({
 })
 
 function toggleCategory(id: number) {
+  if (managingCategories.value)
+    return
   const idx = form.categoryIds.indexOf(id)
   if (idx === -1)
     form.categoryIds.push(id)
-  else form.categoryIds.splice(idx, 1)
+  else
+    form.categoryIds.splice(idx, 1)
 }
 
 async function handleSave() {
-  if (!form.title.trim()) { errorMsg.value = 'Title is required'; return }
-  if (!form.content.trim()) { errorMsg.value = 'Content is required'; return }
+  if (!form.title.trim()) {
+    errorMsg.value = 'Title is required'
+    return
+  }
+  if (!form.content.trim()) {
+    errorMsg.value = 'Content is required'
+    return
+  }
 
   submitting.value = true
   errorMsg.value = ''
@@ -77,10 +98,66 @@ async function handleSave() {
     submitting.value = false
   }
 }
+
+// ---- Category management ----
+
+function handleStartRename(cat: { id: number, name: string }) {
+  editingCategoryId.value = cat.id
+  editingCategoryName.value = cat.name
+}
+
+function handleCancelRename() {
+  editingCategoryId.value = null
+  editingCategoryName.value = ''
+}
+
+async function handleSaveRename() {
+  const id = editingCategoryId.value
+  const name = editingCategoryName.value.trim()
+  if (!id || !name)
+    return
+  try {
+    await blog.updateCategory(id, name)
+    editingCategoryId.value = null
+    editingCategoryName.value = ''
+    toast.value = { message: `Renamed to "${name}"`, type: 'success' }
+    setTimeout(() => {
+      toast.value = null
+    }, 3000)
+  }
+  catch (e: any) {
+    errorMsg.value = e.message || 'Failed to rename category'
+  }
+}
+
+function handleStartDelete(id: number) {
+  confirmDeleteId.value = id
+}
+
+function handleCancelDelete() {
+  confirmDeleteId.value = null
+}
+
+async function handleDeleteCategory(id: number) {
+  try {
+    await blog.deleteCategory(id)
+    const idx = form.categoryIds.indexOf(id)
+    if (idx !== -1)
+      form.categoryIds.splice(idx, 1)
+    confirmDeleteId.value = null
+    toast.value = { message: 'Category deleted', type: 'success' }
+    setTimeout(() => {
+      toast.value = null
+    }, 3000)
+  }
+  catch (e: any) {
+    errorMsg.value = e.message || 'Failed to delete category'
+  }
+}
 </script>
 
 <template>
-  <div mx-auto max-w-6xl py-3>
+  <div mx-auto max-w-6xl py-6>
     <div v-if="!loaded" flex justify-center py-20>
       <div i-carbon-circle-dash animate-spin text-3xl text-teal-600 />
     </div>
@@ -88,6 +165,14 @@ async function handleSave() {
     <template v-else>
       <div v-if="errorMsg" mb-4 rounded-lg p-3 text-sm bg="red-50 dark:red-900/30" text="red-600 dark:red-400" border="~ red-200 dark:red-800">
         {{ errorMsg }}
+      </div>
+
+      <div
+        v-if="toast" mb-4 rounded-lg p-3 text-sm transition-opacity :class="toast.type === 'success'
+          ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-800'
+          : 'bg-red-50 dark:red-900/30 text-red-600 dark:red-400 border border-red-200 dark:border-red-800'"
+      >
+        {{ toast.message }}
       </div>
 
       <div mb-4>
@@ -98,16 +183,73 @@ async function handleSave() {
       <div mb-6 flex flex-wrap items-end gap-4>
         <div flex flex-wrap items-center gap-2>
           <label text="sm gray-600 dark:gray-400" whitespace-nowrap>{{ t('blog.category') || 'Categories:' }}</label>
+
+          <!-- Normal mode: category pills -->
+          <template v-if="!managingCategories">
+            <button
+              v-for="cat in blog.categories"
+              :key="cat.id"
+              border="~" cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium transition-colors
+              :class="form.categoryIds.includes(cat.id)
+                ? 'bg-teal-600 text-white border-teal-600'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
+              @click="toggleCategory(cat.id)"
+            >
+              {{ cat.name }}
+            </button>
+          </template>
+
+          <!-- Manage mode: rename / delete -->
+          <template v-else>
+            <div
+              v-for="cat in blog.categories"
+              v-show="confirmDeleteId !== cat.id"
+              :key="cat.id"
+              flex items-center gap-1 rounded-full border="~ gray-200 dark:gray-600" bg="gray-100 dark:gray-700" px-3 py-1.5 text-xs
+            >
+              <template v-if="editingCategoryId === cat.id">
+                <input
+                  v-model="editingCategoryName"
+                  type="text"
+                  autofocus
+                  w-24 bg="transparent" text="gray-800 dark:gray-100" outline="none"
+                  @keydown.enter="handleSaveRename"
+                  @keydown.escape="handleCancelRename"
+                  @blur="handleSaveRename"
+                >
+              </template>
+              <template v-else>
+                <span text="gray-600 dark:gray-400" cursor-pointer hover="text-teal-600 dark:text-teal-400" @click="handleStartRename(cat)">{{ cat.name }}</span>
+                <button cursor-pointer text="gray-400 hover:red-500" p-0.5 :title="t('blog.delete') || 'Delete'" @click="handleStartDelete(cat.id)">
+                  <div i-carbon-trash-can inline-block />
+                </button>
+              </template>
+            </div>
+
+            <div
+              v-for="cat in blog.categories"
+              v-show="confirmDeleteId === cat.id"
+              :key="`confirm-${cat.id}`"
+              flex items-center gap-1 rounded-full border="~ red-300 dark:red-700" bg="red-50 dark:red-900/30" px-3 py-1 text-xs
+            >
+              <span text="red-600 dark:red-400" whitespace-nowrap>Delete "{{ cat.name }}"?</span>
+              <button cursor-pointer text="red-600 dark:red-400 font-medium hover:text-red-700" @click="handleDeleteCategory(cat.id)">
+                {{ t('button.go') || 'Yes' }}
+              </button>
+              <button cursor-pointer text="gray-500 dark:gray-400 hover:text-gray-700" @click="handleCancelDelete">
+                {{ t('blog.cancel') || 'Cancel' }}
+              </button>
+            </div>
+          </template>
+
           <button
-            v-for="cat in blog.categories"
-            :key="cat.id"
-            border="~" cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium transition-colors
-            :class="form.categoryIds.includes(cat.id)
-              ? 'bg-teal-600 text-white border-teal-600'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
-            @click="toggleCategory(cat.id)"
+            cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium
+            :class="managingCategories
+              ? 'bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 border border-teal-300 dark:border-teal-700'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-dashed gray-300 dark:gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
+            @click="managingCategories = !managingCategories"
           >
-            {{ cat.name }}
+            <div i-carbon-settings-adjust mr-0.5 inline-block />{{ managingCategories ? (t('blog.done') || 'Done') : (t('blog.manage') || 'Manage') }}
           </button>
         </div>
 
@@ -118,8 +260,10 @@ async function handleSave() {
       </div>
 
       <div>
+        <!-- <label text="sm gray-600 dark:gray-400" mb-2 block>{{ t('blog.content') || 'Content (Markdown):' }}</label> -->
         <MdEditor v-model="form.content" min-h-screen-sm :theme="isDark ? 'dark' : 'light'" language="en-US" />
       </div>
     </template>
   </div>
 </template>
+

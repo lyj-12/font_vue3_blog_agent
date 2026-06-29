@@ -13,6 +13,8 @@ declare module 'vue' {
   export interface GlobalComponents {
     CategoryTag: typeof import('./components/CategoryTag.vue')['default']
     NavBar: typeof import('./components/NavBar.vue')['default']
+    NButton: typeof import('naive-ui')['NButton']
+    NSpace: typeof import('naive-ui')['NSpace']
     README: typeof import('./components/README.md')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

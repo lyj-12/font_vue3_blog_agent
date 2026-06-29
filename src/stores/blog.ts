@@ -149,6 +149,28 @@ export const useBlogStore = defineStore('blog', () => {
       throw e
     }
   }
+  async function updateCategory(id: number, name: string) {
+    try {
+      const updated = await categoryApi.update(id, name)
+      const idx = categories.value.findIndex(c => c.id === id)
+      if (idx !== -1) categories.value[idx] = updated
+      return updated
+    }
+    catch (e: any) {
+      error.value = e.message || 'Failed to update category'
+      throw e
+    }
+  }
+  async function deleteCategory(id: number) {
+    try {
+      await categoryApi.delete(id)
+      categories.value = categories.value.filter(c => c.id !== id)
+    }
+    catch (e: any) {
+      error.value = e.message || 'Failed to delete category'
+      throw e
+    }
+  }
 
   return {
     posts,
@@ -168,6 +190,8 @@ export const useBlogStore = defineStore('blog', () => {
     deletePost,
     fetchCategories,
     createCategory,
+    updateCategory,
+    deleteCategory,
   }
 })
 

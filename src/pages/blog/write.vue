@@ -1,14 +1,18 @@
 ﻿<script setup lang="ts">
 import { MdEditor } from 'md-editor-v3'
+import { useImportMarkdown } from '~/composables/useImportMarkdown'
 
 defineOptions({ name: 'BlogWritePage' })
 
 const router = useRouter()
 const auth = useAuthStore()
 const blog = useBlogStore()
+const { importMarkdown } = useImportMarkdown()
 const { t } = useI18n()
+const toast = ref<{ message: string, type: 'success' | 'error' } | null>(null)
 
 useHead({ title: () => t('blog.write') || 'Write a Post' })
+
 
 const form = reactive({
   title: '',
@@ -20,6 +24,10 @@ const submitting = ref(false)
 const errorMsg = ref('')
 const showNewCategory = ref(false)
 const newCategoryName = ref('')
+const managingCategories = ref(false)
+const editingCategoryId = ref<number | null>(null)
+const editingCategoryName = ref('')
+const confirmDeleteId = ref<number | null>(null)
 
 onMounted(async () => {
   await auth.initSession()
@@ -33,6 +41,8 @@ onMounted(async () => {
 })
 
 function toggleCategory(id: number) {
+  if (managingCategories.value)
+    return
   const idx = form.categoryIds.indexOf(id)
   if (idx === -1) {
     form.categoryIds.push(id)
@@ -58,8 +68,14 @@ async function handleCreateCategory() {
 }
 
 async function handlePublish() {
-  if (!form.title.trim()) { errorMsg.value = 'Title is required'; return }
-  if (!form.content.trim()) { errorMsg.value = 'Content is required'; return }
+  if (!form.title.trim()) {
+    errorMsg.value = 'Title is required'
+    return
+  }
+  if (!form.content.trim()) {
+    errorMsg.value = 'Content is required'
+    return
+  }
 
   submitting.value = true
   errorMsg.value = ''
@@ -78,12 +94,100 @@ async function handlePublish() {
     submitting.value = false
   }
 }
+
+async function handleImportMarkdown() {
+  const result = await importMarkdown()
+  if (!result)
+    return
+
+  form.title = result.title
+  form.content = result.content
+
+  // Try to match tags to existing categories by name
+  if (result.tags.length > 0) {
+    const matchedIds = blog.categories
+      .filter(cat => result.tags.some(t => t.toLowerCase() === cat.name.toLowerCase()))
+      .map(cat => cat.id)
+    if (matchedIds.length > 0) {
+      form.categoryIds = matchedIds
+    }
+  }
+
+  toast.value = { message: `Imported: ${result.title}`, type: 'success' }
+  setTimeout(() => {
+    toast.value = null
+  }, 3000)
+}
+
+// ---- Category management ----
+
+function handleStartRename(cat: { id: number, name: string }) {
+  editingCategoryId.value = cat.id
+  editingCategoryName.value = cat.name
+}
+
+function handleCancelRename() {
+  editingCategoryId.value = null
+  editingCategoryName.value = ''
+}
+
+async function handleSaveRename() {
+  const id = editingCategoryId.value
+  const name = editingCategoryName.value.trim()
+  if (!id || !name)
+    return
+  try {
+    await blog.updateCategory(id, name)
+    editingCategoryId.value = null
+    editingCategoryName.value = ''
+    toast.value = { message: `Renamed to "${name}"`, type: 'success' }
+    setTimeout(() => {
+      toast.value = null
+    }, 3000)
+  }
+  catch (e: any) {
+    errorMsg.value = e.message || 'Failed to rename category'
+  }
+}
+
+function handleStartDelete(id: number) {
+  confirmDeleteId.value = id
+}
+
+function handleCancelDelete() {
+  confirmDeleteId.value = null
+}
+
+async function handleDeleteCategory(id: number) {
+  try {
+    await blog.deleteCategory(id)
+    const idx = form.categoryIds.indexOf(id)
+    if (idx !== -1)
+      form.categoryIds.splice(idx, 1)
+    confirmDeleteId.value = null
+    toast.value = { message: 'Category deleted', type: 'success' }
+    setTimeout(() => {
+      toast.value = null
+    }, 3000)
+  }
+  catch (e: any) {
+    errorMsg.value = e.message || 'Failed to delete category'
+  }
+}
 </script>
 
 <template>
-  <div mx-auto max-w-6xl py-3>
+  <div mx-auto max-w-6xl py-6>
     <div v-if="errorMsg" mb-4 rounded-lg p-3 text-sm bg="red-50 dark:red-900/30" text="red-600 dark:red-400" border="~ red-200 dark:red-800">
       {{ errorMsg }}
+    </div>
+
+    <div
+      v-if="toast" mb-4 rounded-lg p-3 text-sm transition-opacity :class="toast.type === 'success'
+        ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-800'
+        : 'bg-red-50 dark:red-900/30 text-red-600 dark:red-400 border border-red-200 dark:border-red-800'"
+    >
+      {{ toast.message }}
     </div>
 
     <div mb-4>
@@ -94,17 +198,65 @@ async function handlePublish() {
     <div mb-6 flex flex-wrap items-end gap-4>
       <div flex flex-wrap items-center gap-2>
         <label text="sm gray-600 dark:gray-400" whitespace-nowrap>{{ t('blog.category') || 'Categories:' }}</label>
-        <button
-          v-for="cat in blog.categories"
-          :key="cat.id"
-          border="~" cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium transition-colors
-          :class="form.categoryIds.includes(cat.id)
-            ? 'bg-teal-600 text-white border-teal-600'
-            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
-          @click="toggleCategory(cat.id)"
-        >
-          {{ cat.name }}
-        </button>
+
+        <!-- Normal mode: category pills -->
+        <template v-if="!managingCategories">
+          <button
+            v-for="cat in blog.categories"
+            :key="cat.id"
+            border="~" cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium transition-colors
+            :class="form.categoryIds.includes(cat.id)
+              ? 'bg-teal-600 text-white border-teal-600'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
+            @click="toggleCategory(cat.id)"
+          >
+            {{ cat.name }}
+          </button>
+        </template>
+
+        <!-- Manage mode: rename / delete -->
+        <template v-else>
+          <div
+            v-for="cat in blog.categories"
+            v-show="confirmDeleteId !== cat.id"
+            :key="cat.id"
+            flex items-center gap-1 rounded-full border="~ gray-200 dark:gray-600" bg="gray-100 dark:gray-700" px-3 py-1.5 text-xs
+          >
+            <template v-if="editingCategoryId === cat.id">
+              <input
+                v-model="editingCategoryName"
+                type="text"
+                autofocus
+                w-24 bg="transparent" text="gray-800 dark:gray-100" outline="none"
+                @keydown.enter="handleSaveRename"
+                @keydown.escape="handleCancelRename"
+                @blur="handleSaveRename"
+              >
+            </template>
+            <template v-else>
+              <span text="gray-600 dark:gray-400" cursor-pointer hover="text-teal-600 dark:text-teal-400" @click="handleStartRename(cat)">{{ cat.name }}</span>
+              <button cursor-pointer text="gray-400 hover:red-500" p-0.5 :title="t('blog.delete') || 'Delete'" @click="handleStartDelete(cat.id)">
+                <div i-carbon-trash-can inline-block />
+              </button>
+            </template>
+          </div>
+
+          <div
+            v-for="cat in blog.categories"
+            v-show="confirmDeleteId === cat.id"
+            :key="`confirm-${cat.id}`"
+            flex items-center gap-1 rounded-full border="~ red-300 dark:red-700" bg="red-50 dark:red-900/30" px-3 py-1 text-xs
+          >
+            <span text="red-600 dark:red-400" whitespace-nowrap>Delete "{{ cat.name }}"?</span>
+            <button cursor-pointer text="red-600 dark:red-400 font-medium hover:text-red-700" @click="handleDeleteCategory(cat.id)">
+              {{ t('button.go') || 'Yes' }}
+            </button>
+            <button cursor-pointer text="gray-500 dark:gray-400 hover:text-gray-700" @click="handleCancelDelete">
+              {{ t('blog.cancel') || 'Cancel' }}
+            </button>
+          </div>
+        </template>
+
         <button
           cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium
           bg="gray-100 dark:gray-700" text="gray-500 dark:gray-400"
@@ -113,6 +265,16 @@ async function handlePublish() {
           @click="showNewCategory = !showNewCategory"
         >
           <div i-carbon-add mr-0.5 inline-block />{{ t('blog.new_category') || 'New' }}
+        </button>
+
+        <button
+          cursor-pointer rounded-full px-3 py-1.5 text-xs font-medium
+          :class="managingCategories
+            ? 'bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 border border-teal-300 dark:border-teal-700'
+            : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-dashed gray-300 dark:gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'"
+          @click="managingCategories = !managingCategories"
+        >
+          <div i-carbon-settings-adjust mr-0.5 inline-block />{{ managingCategories ? (t('blog.done') || 'Done') : (t('blog.manage') || 'Manage') }}
         </button>
       </div>
 
@@ -127,10 +289,25 @@ async function handlePublish() {
         <span v-if="submitting" flex items-center gap-1><div i-carbon-circle-dash animate-spin />{{ t('blog.publishing') || 'Publishing...' }}</span>
         <span v-else flex items-center gap-1><div i-carbon-send />{{ t('blog.publish') || 'Publish' }}</span>
       </button>
+
+      <button
+
+        bg="gray-100 dark:bg-gray-700" text="gray-600 dark:gray-300"
+        border="~ gray-200 dark:border-gray-600"
+        hover="bg-gray-200 dark:hover:bg-gray-600"
+        flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-2 text-sm transition-colors
+        @click="handleImportMarkdown"
+      >
+        <div i-carbon-document-import inline-block />{{ t('blog.import_markdown') || 'Import .md' }}
+      </button>
     </div>
 
     <div>
+      <!-- <label text="sm gray-600 dark:gray-400" mb-2 block>{{ t('blog.content') || 'Content (Markdown):' }}</label> -->
       <MdEditor v-model="form.content" min-h-screen-sm :theme="isDark ? 'dark' : 'light'" :placeholder="t('blog.content_placeholder') || 'Start writing...'" language="en-US" />
     </div>
   </div>
 </template>
+
+
+

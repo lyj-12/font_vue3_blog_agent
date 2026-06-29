@@ -17,10 +17,11 @@
     "sizecheck": "npx vite-bundle-visualizer"
   },
   "dependencies": {
+    "@css-render/vue3-ssr": "catalog:frontend",
     "@unhead/vue": "catalog:frontend",
     "@unocss/reset": "catalog:frontend",
     "@vueuse/core": "catalog:frontend",
-    "md-editor-v3": "^5.8.5",
+    "md-editor-v3": "catalog:frontend",
     "nprogress": "catalog:frontend",
     "pinia": "catalog:frontend",
     "vue": "catalog:frontend",
@@ -48,6 +49,7 @@
     "https-localhost": "catalog:dev",
     "lint-staged": "catalog:dev",
     "markdown-it-link-attributes": "catalog:build",
+    "naive-ui": "catalog:frontend",
     "rollup": "catalog:build",
     "shiki": "catalog:build",
     "simple-git-hooks": "catalog:dev",

@@ -1,9 +1,10 @@
-﻿// ============================================================
+// ============================================================
 // HTTP Client — wraps fetch with base URL, auth headers, auto-refresh
 // ============================================================
 
-// const BASE_URL = 'http://localhost:8008/api'
-const BASE_URL = 'http://8.153.192.172:8008/api'
+export const BASE_URL = 'http://8.153.192.172:8008/api'
+// export const BASE_URL = 'http://localhost:8008/api'
+
 function getTokens(): { accessToken: string | null, refreshToken: string | null } {
   try {
     const raw = localStorage.getItem('blog_tokens')
@@ -26,6 +27,9 @@ export function clearTokens() {
 
 // Token refresh — prevent concurrent refresh calls
 let refreshPromise: Promise<boolean> | null = null
+
+const DASH_G = /-/g
+const UNDERSCORE_G = /_/g
 
 async function tryRefresh(): Promise<boolean> {
   const { refreshToken } = getTokens()
@@ -73,7 +77,9 @@ async function request<T>(
   if (res.status === 401 && accessToken && !isRetry && path !== '/auth/refresh') {
     // Deduplicate concurrent refresh attempts
     if (!refreshPromise) {
-      refreshPromise = tryRefresh().finally(() => { refreshPromise = null })
+      refreshPromise = tryRefresh().finally(() => {
+        refreshPromise = null
+      })
     }
     const ok = await refreshPromise
     if (ok) {
@@ -125,7 +131,7 @@ export function decodeJwtPayload(token: string): Record<string, any> | null {
     const parts = token.split('.')
     if (parts.length !== 3)
       return null
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const base64 = parts[1].replace(DASH_G, '+').replace(UNDERSCORE_G, '/')
     return JSON.parse(atob(base64))
   }
   catch {
