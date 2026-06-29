@@ -26,7 +26,7 @@ function isActive(path: string): boolean {
         <!-- Logo / brand -->
         <div px-4 py-3 border-b="~ gray-200 dark:gray-700">
           <RouterLink to="/" flex items-center gap-2 text-lg font-bold no-underline>
-            <div i-carbon-blog text-xl text-teal-600 />
+            <img src="/MoQi.png" alt="MoQi" class="h-6 w-6">
             <span text="gray-800 dark:gray-100">{{ t('blog.project_name') || 'MyBlog' }}</span>
           </RouterLink>
         </div>
@@ -73,7 +73,7 @@ function isActive(path: string): boolean {
           border-b="~ gray-200 dark:gray-700"
         >
           <RouterLink to="/" flex items-center gap-1.5 text-sm font-bold no-underline>
-            <div i-carbon-blog text-lg text-teal-600 />
+            <img src="/MoQi.png" alt="MoQi" class="h-5 w-5">
             <span text="gray-800 dark:gray-100">{{ t('blog.project_name') || 'MyBlog' }}</span>
           </RouterLink>
           <span text="xs gray-500 dark:gray-400" font-medium>

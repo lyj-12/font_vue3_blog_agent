@@ -84,7 +84,7 @@ onClickOutside(userMenuRef, () => {
     <div mx-auto h-14 max-w-6xl flex items-center justify-between px-4>
       <!-- Logo -->
       <RouterLink to="/" flex items-center gap-2 text-lg font-bold no-underline hover:opacity-80>
-        <div i-carbon-blog text-2xl text-teal-600 />
+        <img src="/MoQi.png" alt="MoQi" class="h-6">
         <span text="gray-800 dark:gray-100">{{ t('blog.project_name') || 'MyBlog' }}</span>
       </RouterLink>
 
@@ -95,6 +95,9 @@ onClickOutside(userMenuRef, () => {
         </RouterLink>
         <RouterLink to="/knowledge/chat" class="text-sm text-gray-600 no-underline transition-colors dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400">
           {{ t('knowledge.title') || 'Knowledge' }}
+        </RouterLink>
+        <RouterLink to="/dict" class="text-sm text-gray-600 no-underline transition-colors dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400">
+          词典
         </RouterLink>
         <!-- Search bar (desktop) -->
         <div relative flex items-center>
@@ -237,6 +240,15 @@ onClickOutside(userMenuRef, () => {
           <span>{{ t('knowledge.title') || 'Knowledge' }}</span>
         </RouterLink>
 
+        <RouterLink
+          to="/dict"
+          class="flex items-center gap-2 rounded-lg p-2 text-gray-700 no-underline hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+          @click="mobileMenuOpen = false"
+        >
+          <div i-carbon-book text-teal-600 />
+          <span>词典</span>
+        </RouterLink>
+
         <button
           w-full flex items-center gap-2 rounded-lg p-2 text-left
           bg="hover:gray-100 dark:hover:gray-800"
@@ -287,5 +299,3 @@ onClickOutside(userMenuRef, () => {
     </div>
   </header>
 </template>
-
-

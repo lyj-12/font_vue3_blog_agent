@@ -8,7 +8,7 @@ const { t } = useI18n()
       <div flex flex-col items-center justify-between gap-4 md:flex-row>
         <!-- Logo & copyright -->
         <div flex items-center gap-2 text="sm gray-500 dark:gray-400">
-          <div i-carbon-blog text-lg text-teal-600 />
+          <img src="/MoQi.png" alt="MoQi" class="h-5 w-5">
           <span>© 2026 YingJie Liu</span>
         </div>
 

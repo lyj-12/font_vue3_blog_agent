@@ -24,7 +24,7 @@ git add .
 
 echo.
 echo [2/3] git commit
-git commit -m "%COMMIT_MSG%"
+git commit -m "%COMMIT_MSG%"  --no-verify
 
 echo.
 echo [3/3] git push

@@ -25,7 +25,7 @@ const projects = [
 </script>
 
 <template>
-  <div mx-auto max-w-4xl py-10>
+  <div mx-auto max-w-4xl py-3>
     <!-- Header -->
     <div mb-10 text-center>
       <div bg="teal-100 dark:teal-900/50" mx-auto mb-5 h-24 w-24 flex items-center justify-center rounded-full>

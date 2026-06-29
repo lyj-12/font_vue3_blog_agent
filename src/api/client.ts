@@ -1,13 +1,14 @@
-// ============================================================
+﻿// ============================================================
 // HTTP Client — wraps fetch with base URL, auth headers, auto-refresh
 // ============================================================
 
-const BASE_URL = 'http://localhost:8008/api'
-
+// const BASE_URL = 'http://localhost:8008/api'
+const BASE_URL = 'http://8.153.192.172:8008/api'
 function getTokens(): { accessToken: string | null, refreshToken: string | null } {
   try {
     const raw = localStorage.getItem('blog_tokens')
-    if (!raw) return { accessToken: null, refreshToken: null }
+    if (!raw)
+      return { accessToken: null, refreshToken: null }
     return JSON.parse(raw)
   }
   catch {
@@ -28,7 +29,8 @@ let refreshPromise: Promise<boolean> | null = null
 
 async function tryRefresh(): Promise<boolean> {
   const { refreshToken } = getTokens()
-  if (!refreshToken) return false
+  if (!refreshToken)
+    return false
 
   try {
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
@@ -36,7 +38,8 @@ async function tryRefresh(): Promise<boolean> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: refreshToken }),
     })
-    if (!res.ok) return false
+    if (!res.ok)
+      return false
 
     const data = await res.json()
     saveTokens(data.access_token, data.refresh_token)
@@ -61,7 +64,7 @@ async function request<T>(
   }
 
   if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`
+    headers.Authorization = `Bearer ${accessToken}`
   }
 
   const res = await fetch(url, { ...options, headers })
@@ -120,7 +123,8 @@ export const http = {
 export function decodeJwtPayload(token: string): Record<string, any> | null {
   try {
     const parts = token.split('.')
-    if (parts.length !== 3) return null
+    if (parts.length !== 3)
+      return null
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
     return JSON.parse(atob(base64))
   }

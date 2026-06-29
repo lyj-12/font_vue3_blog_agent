@@ -87,6 +87,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/dict/': RouteRecordInfo<
+      '/dict/',
+      '/dict',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/hi/[name]': RouteRecordInfo<
       '/hi/[name]',
       '/hi/:name',
@@ -208,6 +215,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/blog/write.vue': {
       routes:
         | '/blog/write'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/dict/index.vue': {
+      routes:
+        | '/dict/'
       views:
         | never
       pathParamNames:
