@@ -1,6 +1,14 @@
 ﻿<script setup lang="ts">
 import { MdEditor } from 'md-editor-v3'
+import { uploadImage } from '~/api'
 
+
+const onUploadImg = async (files: File[], callback: (urls: string[]) => void) => {
+  const urls = await Promise.all(
+    files.map(file => uploadImage(file)),
+  )
+  callback(urls)
+}
 defineOptions({ name: 'BlogEditPage' })
 
 const route = useRoute('/blog/edit/[id]')
@@ -261,7 +269,7 @@ async function handleDeleteCategory(id: number) {
 
       <div>
         <!-- <label text="sm gray-600 dark:gray-400" mb-2 block>{{ t('blog.content') || 'Content (Markdown):' }}</label> -->
-        <MdEditor v-model="form.content" min-h-screen-sm :theme="isDark ? 'dark' : 'light'" language="en-US" />
+        <MdEditor v-model="form.content" @onUploadImg="onUploadImg" min-h-screen-sm :theme="isDark ? 'dark' : 'light'" language="en-US" />
       </div>
     </template>
   </div>

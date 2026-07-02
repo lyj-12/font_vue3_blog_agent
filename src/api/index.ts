@@ -430,3 +430,22 @@ export const wordDictApi = {
 }
 
 export type WordDictResponse = WordDictItem
+
+
+// --- Upload API ---
+
+export async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const tokens = JSON.parse(localStorage.getItem('blog_tokens') || '{}')
+  const headers: Record<string, string> = {}
+  if (tokens.accessToken)
+    headers.Authorization = `Bearer ${tokens.accessToken}`
+
+  const res = await fetch(`${BASE_URL}/upload/image`, { method: 'POST', headers, body: formData })
+  if (!res.ok)
+    throw new Error(`Upload failed (${res.status})`)
+  const data = await res.json()
+  return data.url
+}

@@ -6,7 +6,7 @@ export const useBlogStore = defineStore('blog', () => {
   const posts = ref<BlogListItem[]>([])
   const currentPost = ref<BlogDetail | null>(null)
   const categories = ref<Category[]>([])
-  const loading = ref(false)
+  const loading = ref(true)
   const error = ref<string | null>(null)
 
   // Search/filter state (client-side since backend doesn't support search yet)

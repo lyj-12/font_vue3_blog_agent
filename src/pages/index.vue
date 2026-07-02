@@ -106,6 +106,22 @@ function formatDate(iso: string): string {
       </button>
     </div>
 
+    <!-- Error message -->
+    <div
+      v-if="blog.error"
+      mb-4 rounded-lg p-3 text-sm
+      bg="red-50 dark:red-900/30" text="red-600 dark:red-400"
+      border="~ red-200 dark:red-800"
+    >
+      {{ blog.error }}
+      <button
+        ml-3 underline cursor-pointer
+        @click="blog.fetchPosts(); blog.fetchCategories()"
+      >
+        Retry
+      </button>
+    </div>
+
     <!-- Blog list -->
     <div v-if="blog.loading" flex justify-center py-20>
       <div i-carbon-circle-dash animate-spin text-3xl text-teal-600 />
